@@ -1,0 +1,94 @@
+@import "../../style/mixin.scss";
+@import "../../style/variable.scss";
+
+.qoo_confirm {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+
+    &__mask {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0 0 0 / 0.8);
+    }
+
+    &__dialog {
+        z-index: 2;
+        overflow: hidden;
+        margin: 0 auto;
+        border-radius: 8px;
+        padding-top: 24px;
+        width: 300px;
+        background-color: #fff;
+        box-shadow: 0 0 6px 0 rgba(0 0 0 / 0.1);
+
+        &.brand {
+            color: rgba(var(--text-color), 0.8);
+            background-color: rgb(var(--background-color));
+
+            .qoo_confirm__dialog__body {
+                color: rgba(var(--text-color), 0.8);
+            }
+
+            .qoo_confirm__dialog__footer {
+                border-color: rgba(var(--text-color), 0.1);
+            }
+
+            .qoo_confirm__dialog__btn {
+                &--cancle {
+                    color: rgba(var(--text-color), 0.6);
+                }
+                &--ok {
+                    color: rgb(var(--theme-color));
+                }
+            }
+        }
+
+        // 头部
+        &__header {
+            padding: 0 16px 16px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        // 内容区
+        &__body {
+            padding: 0 16px 24px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        // 底部
+        &__footer {
+            border-top: 1px solid #f5f5f5;
+            padding: 0 16px;
+            height: 48px;
+            text-align: right;
+            .btn {
+                margin-left: 8px;
+                padding: 0 8px;
+                font-size: 14px;
+                font-weight: 600;
+                line-height: 48px;
+                cursor: pointer;
+            }
+
+            .qoo_confirm__dialog__btn {
+                &--cancle {
+                    color: #999;
+                }
+                &--ok {
+                    color: $theme-color;
+                }
+            }
+        }
+    }
+}
