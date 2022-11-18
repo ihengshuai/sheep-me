@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <Game />
-  </div>
+  <Game />
 </template>
 
 <script lang="ts" setup>

@@ -62,21 +62,17 @@ export interface IChess {
   * 棋子的值
   */
   value: string;
-  /**
-  * 压住的棋子(仅当前层的下层)
-  */
-  lowers: IChess[];
 
   /**
-   * 压住当前棋子的棋子(仅当前层的上层)
+   * 棋子之间关系记录
    */
-  highers: IChess[];
+  relation: IChessRelation;
 }
 
 /**
  * 棋子构造器
  */
-export type IChessCtor = Omit<IChess, "lowers" | "highers" | "status" | "x" | "y" | "layer">;
+export type IChessCtor = Omit<IChess, "relation" | "status" | "x" | "y" | "layer">;
 
 /**
  * 棋盘属性
@@ -122,6 +118,49 @@ export interface IChessBoard<T> {
  * 棋盘构造器
  */
 export type IChessBoardCtor<T> = Omit<IChessBoard<T>, "list" | "chessQuantity" | "unitQuantity" | "leftList" | "rightList">;
+
+/**
+ * 棋子关系
+ */
+export interface IChessRelation {
+  /**
+   * 被其它棋子压住的长度
+   */
+  readonly higherSize: number;
+
+  /**
+   * 自己压住棋子的长度
+   */
+  readonly lowerSize: number;
+  /**
+   * 解除棋子关系
+   */
+  removeRelation: () => void;
+
+  /**
+   * 添加被其它压住的棋子
+   * @param chess 棋子
+   */
+  pushHigher: (chess: IChess) => void;
+
+  /**
+   * 删除被其它压住的棋子
+   * @param chess 棋子
+   */
+  removeHigher: (idx: number) => void;
+
+  /**
+   * 添加压住的棋子
+   * @param chess 棋子
+   */
+  pushLower: (chess: IChess) => void;
+
+  /**
+   * 删除压住的棋子
+   * @param chess 棋子
+   */
+  removeLower: (idx: number) => void;
+}
 
 /**
  * 游戏配置

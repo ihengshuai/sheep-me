@@ -1,7 +1,8 @@
 import { nextTick, reactive, Ref } from "vue";
+import Confirm from "../components/confirm";
 import { Chess, ChessBoard, CHESS_TYPES, GameConfig } from "../core";
-import { ICHESS_ENUM, GAME_STATUS } from "../types";
-import { shuffle } from "../utils";
+import { ICHESS_ENUM, GAME_STATUS, CHESS_STATUS, IChess } from "../types";
+import { shuffle, debug, sleep } from "../utils";
 
 /**
  * 实现游戏过程
@@ -11,13 +12,169 @@ export function gameService(dom: Ref<HTMLElement>) {
   let chessborad: ChessBoard;
   // 游戏相关数据
   const gameState = reactive({
+    /**
+     * 游戏状态
+     */
     status: GAME_STATUS.BEGIN,
+    /**
+     * 棋盘中的棋子
+     */
     boardChesses: [] as Chess[],
+    /**
+     * 随机区棋子
+     */
+    randomAreaChesses: [] as Chess[][],
+    /**
+     * 棋子死亡数即：成功消掉的数量
+     */
+    deadChessTotal: 0,
+    /**
+     * 激活中的数量即：槽中的数量
+     */
+    activeChessTotal: 0,
+    /**
+     * 激活的棋子即：槽中的棋子
+     */
+    activeChesses: new Array(GameConfig.fillSize) as Array<Chess|null>,
+    /**
+     * 棋子插入位置
+     */
+    insertIdx: -1,
+    /**
+     * 需要消掉的位置
+     */
+    removeIdx: -1,
   });
 
-  const clickChess = (chess: Chess) => {
-    console.log(chess);
+  let moving = false;
+
+  /**
+   * 点击棋子
+   * @param chess 棋子
+   * @param e 事件源
+   * @param isRandom 是否随机区
+   */
+  const clickChess = async (chess: Chess, e: Event, isRandom: boolean = false) => {
+    if (
+      gameState.status === GAME_STATUS.FAILURE ||
+      chess.relation.higherSize ||
+      gameState.activeChessTotal >= GameConfig.fillSize ||
+      moving
+    ) return;
+    moving = true;
+    const { activeChesses, activeChessTotal } = gameState;
+    let sameTypeIdx = activeChesses.map(c => c?.type).lastIndexOf(chess.type);
+    const insertIdx = sameTypeIdx === -1 ? activeChessTotal : sameTypeIdx + 1
+    gameState.insertIdx = insertIdx;
+    if (sameTypeIdx > -1) {
+      // 触发动画
+      gameState.activeChesses = [...activeChesses.slice(0, insertIdx), null, ...activeChesses.slice(insertIdx)]
+    }
+    await nextTick();
+    debug("插入位置：", insertIdx);
+    chess.relation.removeRelation();
+    await runAnimationChessToQueue(e);
+    gameState.activeChesses = [...activeChesses.slice(0, insertIdx), chess, ...gameState.activeChesses.slice(insertIdx+1)].slice(0, GameConfig.fillSize);
+    gameState.activeChessTotal ++;
+    const acitiveSort: Record<string, {total: number;idx: number;}> = {};
+    gameState.activeChesses.forEach((c, i) => {
+      if (!c) return;
+      if (!acitiveSort[c.type]) {
+        acitiveSort[c.type] = {
+          total: 1,
+          idx: i
+        }
+      } else {
+        acitiveSort[c.type].total ++;
+      }
+      if (acitiveSort[c.type].total === GameConfig.removeSize) {
+        gameState.removeIdx = acitiveSort[c.type].idx;
+      }
+    });
+    chess.status = CHESS_STATUS.ACTIVE;
+    await sleep();
+    moving = false;
+    if (gameState.removeIdx !== -1) {
+      gameState.deadChessTotal += GameConfig.removeSize;
+      gameState.activeChessTotal -= GameConfig.removeSize;
+      const newChessQueue = [
+        ...gameState.activeChesses.slice(0, gameState.removeIdx),
+        ...gameState.activeChesses.slice(gameState.removeIdx + 3)
+      ].concat(new Array(GameConfig.fillSize)).slice(0, GameConfig.fillSize);
+      gameState.activeChesses = newChessQueue;
+      gameState.removeIdx = -1;
+    }
+    if (gameState.activeChessTotal === GameConfig.fillSize) {
+      gameState.status = GAME_STATUS.FAILURE;
+      Confirm.$dialog({
+        title: "提示",
+        content: "失败了",
+        showMask: true,
+        maskClose: false,
+      })
+    } else if (gameState.deadChessTotal === chessborad.chessQuantity){
+      gameState.status = GAME_STATUS.FAILURE;
+      Confirm.$dialog({
+        title: "提示",
+        content: "成功了",
+        showMask: true,
+        maskClose: false,
+      })
+    }
   };
+
+  /**
+   * 棋子入槽动画
+   */
+  const slotAllPos: Record<number, {x?: number, y?: number}> = {};
+  const runAnimationChessToQueue = (e: Event): Promise<void> => {
+    let eventElem = e.target as HTMLElement;
+    let chessElem: HTMLElement;
+    while(true) {
+      if (eventElem.getAttribute('data-is') === 'chess') {
+        chessElem = eventElem;
+        break;
+      }
+      eventElem = eventElem.parentElement!;
+    }
+    return new Promise((resolve) => {
+      const { insertIdx } = gameState;
+      let x: number, y: number;
+      if (slotAllPos[insertIdx]) {
+        x = slotAllPos[insertIdx].x!;
+        y = slotAllPos[insertIdx].y!;
+      } else {
+        slotAllPos[insertIdx] = {};
+        const destSlot = document.querySelectorAll("[data-is='slot-item']")?.[insertIdx];
+        if (!destSlot) return;
+        const { left, top } = destSlot.getBoundingClientRect();
+        x = slotAllPos[insertIdx].x = left;
+        y = slotAllPos[insertIdx].y = top;
+      }
+      const { left: chessX, top: chessY } = chessElem.getBoundingClientRect();
+      chessElem?.setAttribute("style", `left:${chessX}px;top:${chessY}px;position:fixed;`);
+      requestAnimationFrame(() => {
+        const styl: Record<string, string | number> = {
+          "z-index": 1000,
+          "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+          "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+          "left": `${x}px`,
+          "top": `${y}px`,
+          "position": "fixed",
+          "transition": "all 300ms ease-in-out",
+          "animation": "to-queue 300ms",
+          "will-change": "auto"
+        };
+        // const originPos = chessElem?.getBoundingClientRect();
+        chessElem?.setAttribute("style", Object.keys(styl).reduce<string>((p, k) => p+=`${k}:${styl[k]};`, ''));
+        setTimeout(() => {
+          // chessElem?.setAttribute("style", `left:160px;top: 600px;`);
+          resolve();
+        }, 300);
+      })
+      
+    })
+  }
 
   /**
    * 初始化棋盘
@@ -55,10 +212,10 @@ export function gameService(dom: Ref<HTMLElement>) {
     // 棋子应该是类型的整数倍，才能消除完
     const shouldTotal =
       defineTotal + perRemoveTotal - (defineTotal % perRemoveTotal);
-    console.log("真正需要的棋子数：", shouldTotal);
+    debug("真正需要的棋子数：", shouldTotal);
     const chessboardTotal = shouldTotal - GameConfig.quantityRandom;
-    console.log("棋盘中的棋子数：", chessboardTotal);
-    console.log("随机区域的棋子数：", GameConfig.quantityRandom);
+    debug("棋盘中的棋子数：", chessboardTotal);
+    debug("随机区域的棋子数：", GameConfig.quantityRandom);
 
     // 渲染棋盘棋子
     const renderChessType = CHESS_TYPES.slice(0, GameConfig.type);
@@ -67,7 +224,6 @@ export function gameService(dom: Ref<HTMLElement>) {
       fillChessTypeList.push(renderChessType[i % GameConfig.type]);
     }
     fillChessTypeList = shuffle(fillChessTypeList);
-    console.log(fillChessTypeList);
     const allChess: Chess[] = [];
     for (let i = 0; i < shouldTotal; i++) {
       const curType = fillChessTypeList[i];
@@ -79,7 +235,6 @@ export function gameService(dom: Ref<HTMLElement>) {
         })
       );
     }
-    console.log("所有棋子：", allChess);
 
     let leftNoPosChesss = fillChessTypeList.slice(0, chessboardTotal).length;
     let boardChessesIdx = GameConfig.quantityRandom;
@@ -96,6 +251,7 @@ export function gameService(dom: Ref<HTMLElement>) {
           ? leftNoPosChesss
           : Math.min(leftNoPosChesss, GameConfig.quantityPerLayer);
       leftNoPosChesss -= currentChesss;
+      // 四个方向加减缩进
       const dir = i % 8;
       if (dir === 0) {
         pos.minX += 1;
@@ -119,7 +275,7 @@ export function gameService(dom: Ref<HTMLElement>) {
         boardChessesIdx + currentChesss
       );
       boardChessesIdx += currentChesss;
-      genPosChess(waitGenChess, i, pos.minX, pos.minY, pos.maxX, pos.maxY);
+      createChessPos(waitGenChess, pos.minX, pos.minY, pos.maxX, pos.maxY);
       if (leftNoPosChesss <= 0) break;
     }
   };
@@ -133,9 +289,8 @@ export function gameService(dom: Ref<HTMLElement>) {
    * @param maxX x最大偏移
    * @param maxY y最大偏移
    */
-  const genPosChess = (
+  const createChessPos = (
     chesses: Chess[],
-    layer: number,
     minX: number,
     minY: number,
     maxX: number,
@@ -182,11 +337,11 @@ export function gameService(dom: Ref<HTMLElement>) {
     const minX = Math.max(chess.x - (GameConfig.perChessColumn - 1), 0);
     const minY = Math.max(chess.y - (GameConfig.perChessRow - 1), 0);
     const maxX = Math.min(
-      chess.x + GameConfig.perChessColumn - 1,
+      chess.x + GameConfig.perChessColumn,
       GameConfig.column - (GameConfig.perChessColumn - 1)
     );
     const maxY = Math.min(
-      chess.y + GameConfig.perChessRow - 1,
+      chess.y + GameConfig.perChessRow,
       GameConfig.row - (GameConfig.perChessRow - 1)
     );
 
@@ -200,8 +355,8 @@ export function gameService(dom: Ref<HTMLElement>) {
             relationBlocks![relationBlocks!.length - 1];
           if (maxLevelRelationBlock?.idx === chess.idx) continue;
           maxLevel = Math.max(maxLevel, maxLevelRelationBlock.layer);
-          chess.lowers.push(maxLevelRelationBlock);
-          maxLevelRelationBlock.highers.push(chess);
+          chess.relation.pushLower(maxLevelRelationBlock);
+          maxLevelRelationBlock.relation.pushHigher(chess);
         }
       }
     }
@@ -214,7 +369,7 @@ export function gameService(dom: Ref<HTMLElement>) {
   const launch = () => {
     if (gameState.status === GAME_STATUS.ONGOING) return;
     gameState.status = GAME_STATUS.ONGOING;
-    console.log("launch...");
+    debug("launch...");
     initChessBoard();
     initChess();
   };

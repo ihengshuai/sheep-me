@@ -4,7 +4,9 @@ import {
   IChessBoard,
   IChessBoardCtor,
   CHESS_STATUS,
+  IChessRelation,
 } from "../types"
+import { ChessRelation } from "./relation";
 
 /**
  * 棋子
@@ -17,14 +19,12 @@ export class Chess implements IChess {
   type;
   value;
   status;
-  lowers: IChess[];
-  highers: IChess[];
+  relation: IChessRelation;
   constructor(opts: IChessCtor) {
     this.idx = opts.idx;
     this.type = opts.type;
     this.value = opts.value;
-    this.lowers = [];
-    this.highers = [];
+    this.relation = new ChessRelation(this.idx);
     this.status = CHESS_STATUS.UN_CLICKABLE;
   }
 }

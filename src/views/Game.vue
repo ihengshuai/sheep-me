@@ -1,14 +1,31 @@
 <template>
-  <div ref="chessBoardRef" class="chess-board">
-    <div
-      v-for="chess in gameState.boardChesses"
-      :key="chess.idx"
-      :class="`chess-item ${chess.highers.length > 0 ? 'gray' : ''}`"
-      :style="getChessStyle(chess)"
-      :data-id="chess.idx"
-      @click="clickChess(chess)"
-    >
-      <img :src="chess.value" alt="" />
+  <div class="chess-viewer">
+    <div ref="chessBoardRef" class="chess-board">
+      <div
+        v-for="chess in gameState.boardChesses"
+        :key="chess.idx"
+        :class="getBoardChessClass(chess)"
+        :style="getChessStyle(chess)"
+        :data-id="chess.idx"
+        :data-layer="chess.layer"
+        data-is="chess"
+        @click="(e) => clickChess(chess, e)"
+      >
+        <img :src="chess.value" alt="" />
+      </div>
+    </div>
+    
+    <!-- 槽位 -->
+    <div class="chess-slot" :style="getSlotStyle()">
+      <div
+        v-for="(chess, i) in gameState.activeChesses"
+        :key="chess?.idx"
+        :style="getSlotItemStyle(i)"
+        :class="`slot-item ${chess ? '' : 'emtry'}`"
+        data-is="slot-item"
+      >
+        <img v-if="chess" :src="chess?.value" />
+      </div>
     </div>
   </div>
 </template>
@@ -16,18 +33,28 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import { gameService } from "../business";
-import { Chess, GameConfig } from "../core";
+import { GameConfig } from "../core";
+import { CHESS_STATUS, IChess } from "../types";
 
 const chessBoardRef = ref();
 const { gameState, launch, clickChess } = gameService(chessBoardRef);
 
-const getChessStyle = (chess: Chess): string => {
+const getBoardChessClass = (chess: IChess): Record<string, boolean> => {
+  return {
+    "chess-item": true,
+    "gray": chess.relation.higherSize > 0
+  }
+}
+
+const getChessStyle = (chess: IChess): string => {
   const styl: Record<string, string | number> = {
-    zIndex: 100 + chess.layer,
-    width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-    height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-    left: `${chess.x * GameConfig.columnWidth}px`,
-    top: `${chess.y * GameConfig.rowWidth}px`,
+    "z-index": 100 + chess.layer,
+    "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+    "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+    "left": `${chess.x * GameConfig.columnWidth}px`,
+    "top": `${chess.y * GameConfig.rowWidth}px`,
+    "--opacity": `${chess.layer > (GameConfig.layers / 2) ? 50 : 70}%`,
+    "display": `${(chess.status !== CHESS_STATUS.DEAD) ? 'block' : 'none'}`
   };
   return Object.keys(styl).reduce<string>(
     (p, k) => (p += `${k}:${styl[k]};`),
@@ -35,15 +62,47 @@ const getChessStyle = (chess: Chess): string => {
   );
 };
 
+const getSlotStyle = () => {
+  const styl: Record<string, any> = {
+    "width": `${GameConfig.fillSize * GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+    "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+  }
+  return Object.keys(styl).reduce<string>(
+    (p, k) => (p += `${k}:${styl[k]};`),
+    ""
+  )
+}
+
+const getSlotItemStyle = (offset: number) => {
+  const styl: Record<string, any> = {
+    "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+    "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+    "left": `${GameConfig.columnWidth * GameConfig.perChessColumn * offset + 16}px`
+  }
+  return Object.keys(styl).reduce<string>(
+    (p, k) => (p += `${k}:${styl[k]};`),
+    ""
+  )
+}
+
 onMounted(launch);
 </script>
 
 <style lang="scss" scoped>
+.chess-viewer {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: url(/imgs/bg.png) repeat;
+}
 .chess-board {
   margin: 100px auto;
   background: salmon;
   position: relative;
+  user-select: none;
 }
+
+// 每个棋子
 .chess-item {
   position: absolute;
   border-radius: 3px;
@@ -54,25 +113,68 @@ onMounted(launch);
 
   &::after {
     content: "";
-    display: none;
+    display: block;
     position: absolute;
+    transition: all 200ms ease-in;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
-    background: rgba(0 0 0 / 40%);
+    background: transparent;
   }
 
   &.gray {
     cursor: no-drop;
     &::after {
-      display: block;
+      background: rgba(0 0 0 / var(--opacity));
     }
   }
 
   img {
     width: 100%;
     height: 100%;
+  }
+}
+
+// 槽位
+.chess-slot {
+  display: flex;
+  padding: 22px 16px 26px;
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translate(-50%);
+  background-image: url(/imgs/slot-bg.png);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  overflow: hidden;
+
+  .slot-item {
+    transition: left 250ms ease-in;
+    position: absolute;
+    overflow: hidden;
+    border-radius: 3px;
+    border: 1px solid rgba(0 0 0 / 20%);
+    box-sizing: border-box;
+    &.emtry {
+      border: none;
+    }
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+@keyframes to-queue {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.4);
+  }
+  80% {
+    transform: scale(1);
   }
 }
 </style>
