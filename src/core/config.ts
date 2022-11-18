@@ -1,4 +1,4 @@
-import { IGameConfig, ICHESS_ENUM } from "../types"
+import { IGameConfig, ICHESS_ENUM } from "../types";
 
 /**
  * 枚举棋子种类
@@ -19,16 +19,16 @@ export const CHESS_TYPES: Array<ICHESS_ENUM> = [
  * 游戏配置
  */
 export const GameConfig: IGameConfig = {
-  type: 1,
-  layers: 1,
-  quantityPerLayer: 4,
-  quantityRandom: 0,
+  type: 8,
+  layers: 10,
+  quantityPerLayer: 30,
+  quantityRandom: 20,
   removeSize: 3,
   fillSize: 7,
-  row: 27,
-  column: 27,
-  rowWidth: 12,
-  columnWidth: 12,
+  row: 24,
+  column: 24,
+  rowWidth: 14,
+  columnWidth: 14,
   perChessColumn: 3,
   perChessRow: 3,
-}
+};

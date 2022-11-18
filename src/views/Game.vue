@@ -8,22 +8,18 @@
       :data-id="chess.idx"
       @click="clickChess(chess)"
     >
-      <img :src="chess.value" alt="">
+      <img :src="chess.value" alt="" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { gameService } from "../business"
-import { Chess, GameConfig } from "../core"
+import { gameService } from "../business";
+import { Chess, GameConfig } from "../core";
 
 const chessBoardRef = ref();
-const {
-  gameState,
-  launch,
-  clickChess
-} = gameService(chessBoardRef);
+const { gameState, launch, clickChess } = gameService(chessBoardRef);
 
 const getChessStyle = (chess: Chess): string => {
   const styl: Record<string, string | number> = {
@@ -31,10 +27,13 @@ const getChessStyle = (chess: Chess): string => {
     width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
     height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
     left: `${chess.x * GameConfig.columnWidth}px`,
-    top: `${chess.y * GameConfig.rowWidth}px`
-  }
-  return Object.keys(styl).reduce<string>((p, k) => p += `${k}:${styl[k]};`, '');
-}
+    top: `${chess.y * GameConfig.rowWidth}px`,
+  };
+  return Object.keys(styl).reduce<string>(
+    (p, k) => (p += `${k}:${styl[k]};`),
+    ""
+  );
+};
 
 onMounted(launch);
 </script>
@@ -52,7 +51,7 @@ onMounted(launch);
   cursor: pointer;
   border: 1px solid #000;
   box-sizing: border-box;
-  
+
   &::after {
     content: "";
     display: none;
@@ -64,7 +63,7 @@ onMounted(launch);
     background: rgba(0 0 0 / 40%);
   }
 
-  &.gray{
+  &.gray {
     cursor: no-drop;
     &::after {
       display: block;
