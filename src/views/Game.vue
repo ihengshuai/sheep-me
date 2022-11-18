@@ -26,6 +26,13 @@
       >
         <img v-if="chess" :src="chess?.value" />
       </div>
+      <Transition name="bounce">
+        <div v-if="gameState.removeIdx > -1" :style="`--offset:${gameState.removeIdx * GameConfig.columnWidth * GameConfig.perChessColumn}px;transform: translate(${gameState.removeIdx * GameConfig.columnWidth * GameConfig.perChessColumn}px) scale(1.2);`" class="star" />
+      </Transition>
+    </div>
+
+    <div class="grass-wrap">
+      <img v-for="i in 30" :key="i" :style="getGrassPos(i)" class="grass animate__bounceIn" src="/imgs/grass.png" alt="">
     </div>
   </div>
 </template>
@@ -77,12 +84,20 @@ const getSlotItemStyle = (offset: number) => {
   const styl: Record<string, any> = {
     "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
     "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-    "left": `${GameConfig.columnWidth * GameConfig.perChessColumn * offset + 16}px`
+    "will-change": "auto",
+    "transform": `translateX(${GameConfig.columnWidth * GameConfig.perChessColumn * offset}px)`
   }
   return Object.keys(styl).reduce<string>(
     (p, k) => (p += `${k}:${styl[k]};`),
     ""
   )
+}
+
+const getGrassPos = (i: number) => {
+  return {
+    left: Math.floor(Math.random() * (i + 2) * 100 + i * 10) + "px",
+    top: Math.floor(Math.random() * (i + 2) * 200 + i * 10) + "px",
+  }
 }
 
 onMounted(launch);
@@ -100,6 +115,7 @@ onMounted(launch);
   background: salmon;
   position: relative;
   user-select: none;
+  z-index: 10;
 }
 
 // 每个棋子
@@ -110,6 +126,7 @@ onMounted(launch);
   cursor: pointer;
   border: 1px solid #000;
   box-sizing: border-box;
+  will-change: auto;
 
   &::after {
     content: "";
@@ -141,6 +158,7 @@ onMounted(launch);
   display: flex;
   padding: 22px 16px 26px;
   position: absolute;
+  z-index: 10;
   bottom: 100px;
   left: 50%;
   transform: translate(-50%);
@@ -150,7 +168,7 @@ onMounted(launch);
   overflow: hidden;
 
   .slot-item {
-    transition: left 250ms ease-in;
+    transition: transform 200ms ease-in;
     position: absolute;
     overflow: hidden;
     border-radius: 3px;
@@ -166,6 +184,66 @@ onMounted(launch);
   }
 }
 
+.grass-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 0;
+  overflow: hidden;
+
+  .grass {
+    position: absolute;
+    animation: swing-in-bottom-fwd 1.2s cubic-bezier(0.175, 0.885, 0.320, 1.275) infinite;
+    animation-delay: 0.3s;
+  }
+}
+@keyframes swing-in-bottom-fwd {
+  0% {
+    -webkit-transform: rotateX(100deg);
+            transform: rotateX(100deg);
+    -webkit-transform-origin: bottom;
+            transform-origin: bottom;
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: rotateX(0);
+            transform: rotateX(0);
+    -webkit-transform-origin: bottom;
+            transform-origin: bottom;
+    opacity: 1;
+  }
+}
+
+.star {
+  visibility: hidden;
+  position: absolute;
+  width: calc(42 * 3px);
+  height: 42px;
+  background: transparent;
+  background-image: url(/imgs/star.png);
+  background-size: auto 100%;
+  background-repeat: repeat;
+  z-index: 10;
+}
+
+.bounce-leave-active {
+  visibility: visible;
+  animation: bounce-in 0.2s;
+}
+@keyframes bounce-in {
+  0% {
+    transform: translate(var(--offset)) scale(1.1);
+  }
+  50% {
+    transform: translate(var(--offset)) scale(1.3);
+  }
+  100% {
+    transform: translate(var(--offset)) scale(0.4);
+  }
+}
+
 @keyframes to-queue {
   0% {
     transform: scale(1);
@@ -177,4 +255,6 @@ onMounted(launch);
     transform: scale(1);
   }
 }
+
+@-webkit-keyframes bounceIn{0%,20%,40%,60%,80%,to{-webkit-animation-timing-function:cubic-bezier(.215,.61,.355,1);animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;-webkit-transform:scale3d(.3,.3,.3);transform:scale3d(.3,.3,.3)}20%{-webkit-transform:scale3d(1.1,1.1,1.1);transform:scale3d(1.1,1.1,1.1)}40%{-webkit-transform:scale3d(.9,.9,.9);transform:scale3d(.9,.9,.9)}60%{opacity:1;-webkit-transform:scale3d(1.03,1.03,1.03);transform:scale3d(1.03,1.03,1.03)}80%{-webkit-transform:scale3d(.97,.97,.97);transform:scale3d(.97,.97,.97)}to{opacity:1;-webkit-transform:scaleX(1);transform:scaleX(1)}}@keyframes bounceIn{0%,20%,40%,60%,80%,to{-webkit-animation-timing-function:cubic-bezier(.215,.61,.355,1);animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;-webkit-transform:scale3d(.3,.3,.3);transform:scale3d(.3,.3,.3)}20%{-webkit-transform:scale3d(1.1,1.1,1.1);transform:scale3d(1.1,1.1,1.1)}40%{-webkit-transform:scale3d(.9,.9,.9);transform:scale3d(.9,.9,.9)}60%{opacity:1;-webkit-transform:scale3d(1.03,1.03,1.03);transform:scale3d(1.03,1.03,1.03)}80%{-webkit-transform:scale3d(.97,.97,.97);transform:scale3d(.97,.97,.97)}to{opacity:1;-webkit-transform:scaleX(1);transform:scaleX(1)}}
 </style>
