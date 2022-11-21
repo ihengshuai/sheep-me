@@ -15,6 +15,46 @@
       </div>
     </div>
 
+    <div class="random-chess">
+      <div
+        v-for="(chesses, i) in gameState.randomAreaChesses"
+        :key="i"
+        :class="`random-area ${i % 2 ? 'left' : 'right'}`"
+        :style="{}"
+      >
+        <div
+          v-if="chesses.length"
+          :data-id="chesses[0]?.idx"
+          :style="{
+            background: `url(${chesses[0]?.value}) 42px 42px`,
+            position: 'absolute',
+            width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+            height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+            left: `${i ? 'inherit' : `${(chesses.length - 1) * 10 + 20}px`}`,
+            right: `${i ? `${(chesses.length - 1) * 10 + 20}px` : 'inherit'}`,
+            zIndex: 100
+          }"
+          :class="`block`"
+          data-is="chess"
+          @click="(e) => clickChess(chesses[0], e, i % 2 ? 'LEFT' : 'RIGHT')"
+        />
+        <div
+          v-for="num in Math.max(chesses.length - 1, 0)"
+          :key="num"
+          :style="{
+            zIndex: 100 - num,
+            position: 'absolute',
+            width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+            height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+            left: `${i ? 'inherit' : `${(chesses.length - 1 - num) * 10 + 20}px`}`,
+            right: `${i ? `${(chesses.length - 1 - num) * 10 + 20}px` : 'inherit'}`,
+          }"
+          data-is="chess"
+          class="chess-item disabled"
+        />
+      </div>
+    </div>
+
     <!-- 槽位 -->
     <div class="chess-slot" :style="getSlotStyle()">
       <div
@@ -127,7 +167,7 @@ onMounted(launch);
   // background: url(/imgs/bg.png) repeat;
 }
 .chess-board {
-  margin: 100px auto;
+  margin: 100px auto 0;
   background: salmon;
   position: relative;
   user-select: none;
@@ -167,6 +207,28 @@ onMounted(launch);
     width: 100%;
     height: 100%;
   }
+}
+
+// 随机区
+.random-chess {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.random-area {
+  position: relative;
+  margin-top: 8px;
+  flex: 1;
+}
+.random-area.left * {
+  position: relative;
+  box-shadow: 3px 0 0px rgb(0 0 0 / 10%);
+}
+.random-area.right * {
+  position: relative;
+  box-shadow: -3px 0 0px rgb(0 0 0 / 10%);
 }
 
 // 槽位

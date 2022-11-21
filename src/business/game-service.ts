@@ -1,8 +1,8 @@
-import { nextTick, reactive, Ref } from "vue";
+import { reactive, Ref } from "vue";
 import Confirm from "../components/confirm";
 import { Chess, ChessBoard, CHESS_TYPES, GameConfig, Slot } from "../core";
-import { ICHESS_ENUM, GAME_STATUS, CHESS_STATUS, IChess } from "../types";
-import { shuffle, debug, sleep } from "../utils";
+import { ICHESS_ENUM, GAME_STATUS, IChess } from "../types";
+import { shuffle, debug } from "../utils";
 
 /**
  * 实现游戏过程
@@ -39,7 +39,8 @@ export function gameService(dom: Ref<HTMLElement>) {
    */
   const clickChess = async (
     chess: IChess,
-    e: Event
+    e: Event,
+    dir?: 'RIGHT' | 'LEFT'
   ) => {
     if (
       gameState.status === GAME_STATUS.FAILURE ||
@@ -49,6 +50,16 @@ export function gameService(dom: Ref<HTMLElement>) {
     )
       return;
     moving = true;
+    if (!chess.inBoard) {
+      const randomIdx = dir === "LEFT" ? 0 : 1;
+      let idx = -1;
+      gameState.randomAreaChesses[randomIdx].forEach((l, i) => {
+        if (l.idx === chess.idx) {
+          idx = i;
+        }
+      });
+      gameState.randomAreaChesses[randomIdx] = [...gameState.randomAreaChesses[randomIdx].slice(1)];
+    }
     gameState.chessSlot.insert(chess, e, () => {
       moving = false;
       if (gameState.chessSlot.activeSize === GameConfig.fillSize) {
@@ -140,8 +151,13 @@ export function gameService(dom: Ref<HTMLElement>) {
         );
       }
 
-      let leftNoPosChesss = fillChessTypeList.slice(0, chessboardTotal).length;
       let boardChessesIdx = GameConfig.quantityRandom;
+      const randomList = allChess.slice(0, boardChessesIdx);
+      gameState.randomAreaChesses = [[], []];
+      for (let i = 0; i < GameConfig.quantityRandom; i ++) {
+        gameState.randomAreaChesses[i % 2].push(randomList[i]);
+      }
+      let leftNoPosChesss = fillChessTypeList.slice(boardChessesIdx, chessboardTotal).length;
       gameState.boardChesses = allChess.slice(boardChessesIdx, chessboardTotal);
       const pos = {
         minX: 0,

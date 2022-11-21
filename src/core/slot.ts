@@ -143,7 +143,7 @@ export class Slot implements ISlot{
       const { left: chessX, top: chessY } = chessElem.getBoundingClientRect();
       chessElem?.setAttribute(
         "style",
-        `left:${chessX}px;top:${chessY}px;position:fixed;`
+        `left:${chessX}px;top:${chessY}px;position:fixed;width:${GameConfig.columnWidth * GameConfig.perChessColumn}px;height:${GameConfig.rowWidth * GameConfig.perChessRow}px`
       );
       requestAnimationFrame(() => {
         const styl: Record<string, string | number> = {
