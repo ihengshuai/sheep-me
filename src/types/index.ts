@@ -23,7 +23,6 @@ export enum CHESS_STATUS {
   DEAD = 2,
 }
 
-
 /**
  *  棋子属性
  */
@@ -34,8 +33,8 @@ export interface IChess {
   layer: number;
 
   /**
-  * 棋子在数组中的索引
-  */
+   * 棋子在数组中的索引
+   */
   idx: number;
 
   /**
@@ -49,18 +48,18 @@ export interface IChess {
   y: number;
 
   /**
-  * 棋子的状态
-  */
+   * 棋子的状态
+   */
   status: CHESS_STATUS;
 
   /**
-  * 类型(属于哪一类的棋子，相同类型的棋子会消除掉)
-  */
+   * 类型(属于哪一类的棋子，相同类型的棋子会消除掉)
+   */
   type: number | string;
 
   /**
-  * 棋子的值
-  */
+   * 棋子的值
+   */
   value: string;
 
   /**
@@ -72,7 +71,10 @@ export interface IChess {
 /**
  * 棋子构造器
  */
-export type IChessCtor = Omit<IChess, "relation" | "status" | "x" | "y" | "layer">;
+export type IChessCtor = Omit<
+  IChess,
+  "relation" | "status" | "x" | "y" | "layer"
+>;
 
 /**
  * 棋盘属性
@@ -81,7 +83,7 @@ export interface IChessBoard<T> {
   /**
    * 棋盘列表
    */
-  list: Array<Array<{chesses: T[]}>> | null;
+  list: Array<Array<{ chesses: T[] }>> | null;
 
   /**
    * 左边列表(棋盘下面两个随机区)
@@ -112,12 +114,15 @@ export interface IChessBoard<T> {
    * 格子数量
    */
   unitQuantity: number;
-} 
+}
 
 /**
  * 棋盘构造器
  */
-export type IChessBoardCtor<T> = Omit<IChessBoard<T>, "list" | "chessQuantity" | "unitQuantity" | "leftList" | "rightList">;
+export type IChessBoardCtor<T> = Omit<
+  IChessBoard<T>,
+  "list" | "chessQuantity" | "unitQuantity" | "leftList" | "rightList"
+>;
 
 /**
  * 棋子关系
@@ -169,27 +174,27 @@ export interface IGameConfig {
   /**
    * 需要的棋子种类
    */
-  type: number,
+  type: number;
 
   /**
    * 需要几个才能消除
    */
-  removeSize: number,
-  
+  removeSize: number;
+
   /**
    * 填充大小(槽大小)
    */
-  fillSize: number,
+  fillSize: number;
 
   /**
    * 层数
    */
-  layers: number,
+  layers: number;
 
   /**
    * 每层数量
    */
-  quantityPerLayer: number,
+  quantityPerLayer: number;
 
   /**
    * 两个随机区域棋子数量
@@ -199,7 +204,7 @@ export interface IGameConfig {
   /**
    * 棋盘行数
    */
-  row: number,
+  row: number;
 
   /**
    * 棋盘列数
@@ -242,20 +247,20 @@ export enum GAME_STATUS {
   /**
    * 开始
    */
-  BEGIN = 'begin',
+  BEGIN = "begin",
 
   /**
    * 进行中
    */
-  ONGOING = 'ongoing',
+  ONGOING = "ongoing",
 
   /**
    * 成功
    */
-  SUCCESS = 'success',
+  SUCCESS = "success",
 
   /**
    * 失败
    */
-  FAILURE = 'failure'
+  FAILURE = "failure",
 }

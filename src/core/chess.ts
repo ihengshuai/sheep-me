@@ -5,7 +5,7 @@ import {
   IChessBoardCtor,
   CHESS_STATUS,
   IChessRelation,
-} from "../types"
+} from "../types";
 import { ChessRelation } from "./relation";
 
 /**
@@ -29,7 +29,6 @@ export class Chess implements IChess {
   }
 }
 
-
 /**
  * 棋盘
  */
@@ -40,8 +39,8 @@ export class ChessBoard<T = Chess> implements IChessBoard<T> {
   chessQuantity: number = 0;
   leftList: T[] | null = null;
   rightList: T[] | null = null;
-  list: { chesses: T[]; }[][] | null = null;
-  
+  list: { chesses: T[] }[][] | null = null;
+
   constructor(opts: IChessBoardCtor<T>) {
     this.row = opts.row;
     this.column = opts.column;
@@ -55,9 +54,9 @@ export class ChessBoard<T = Chess> implements IChessBoard<T> {
    */
   private _init() {
     this.list = new Array(this.row);
-    for (let i = 0; i< this.row; i++) {
+    for (let i = 0; i < this.row; i++) {
       this.list[i] = new Array(this.column);
-      for ( let j = 0; j< this.column; j++) {
+      for (let j = 0; j < this.column; j++) {
         this.list[i][j] = { chesses: [] };
       }
     }
@@ -84,7 +83,7 @@ export class ChessBoard<T = Chess> implements IChessBoard<T> {
   fill(row: number, column: number, value: T) {
     if (this.list) {
       this.list[row][column].chesses.push(value);
-      this.chessQuantity ++;
+      this.chessQuantity++;
     }
   }
 
@@ -94,7 +93,7 @@ export class ChessBoard<T = Chess> implements IChessBoard<T> {
    */
   fillLeft(value: T) {
     (this.leftList || (this.leftList = [])).push(value);
-    this.chessQuantity ++;
+    this.chessQuantity++;
   }
 
   /**
@@ -103,6 +102,6 @@ export class ChessBoard<T = Chess> implements IChessBoard<T> {
    */
   fillRight(value: T) {
     (this.rightList || (this.rightList = [])).push(value);
-    this.chessQuantity ++;
+    this.chessQuantity++;
   }
 }

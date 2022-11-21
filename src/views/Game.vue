@@ -1,20 +1,20 @@
 <template>
   <div class="chess-viewer">
     <div ref="chessBoardRef" class="chess-board">
-      <div
-        v-for="chess in gameState.boardChesses"
-        :key="chess.idx"
-        :class="getBoardChessClass(chess)"
-        :style="getChessStyle(chess)"
-        :data-id="chess.idx"
-        :data-layer="chess.layer"
-        data-is="chess"
-        @click="(e) => clickChess(chess, e)"
-      >
-        <img :src="chess.value" alt="" />
+      <div v-for="chess in gameState.boardChesses" :key="chess.idx">
+        <div
+          :class="getBoardChessClass(chess)"
+          :style="getChessStyle(chess)"
+          :data-id="chess.idx"
+          :data-layer="chess.layer"
+          data-is="chess"
+          @click="(e: Event) => clickChess(chess, e)"
+        >
+          <img :src="chess.value" alt="" />
+        </div>
       </div>
     </div>
-    
+
     <!-- 槽位 -->
     <div class="chess-slot" :style="getSlotStyle()">
       <div
@@ -27,13 +27,25 @@
         <img v-if="chess" :src="chess?.value" />
       </div>
       <Transition name="bounce">
-        <div v-if="gameState.removeIdx > -1" :style="`--offset:${gameState.removeIdx * GameConfig.columnWidth * GameConfig.perChessColumn}px;transform: translate(${gameState.removeIdx * GameConfig.columnWidth * GameConfig.perChessColumn}px) scale(1.2);`" class="star" />
+        <div
+          v-if="gameState.removeIdx > -1"
+          :style="`--offset:${
+            gameState.removeIdx *
+            GameConfig.columnWidth *
+            GameConfig.perChessColumn
+          }px;transform: translate(${
+            gameState.removeIdx *
+            GameConfig.columnWidth *
+            GameConfig.perChessColumn
+          }px) scale(1.2);`"
+          class="star"
+        />
       </Transition>
     </div>
 
-    <div class="grass-wrap">
+    <!-- <div class="grass-wrap">
       <img v-for="i in 30" :key="i" :style="getGrassPos(i)" class="grass animate__bounceIn" src="/imgs/grass.png" alt="">
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -49,19 +61,19 @@ const { gameState, launch, clickChess } = gameService(chessBoardRef);
 const getBoardChessClass = (chess: IChess): Record<string, boolean> => {
   return {
     "chess-item": true,
-    "gray": chess.relation.higherSize > 0
-  }
-}
+    gray: chess.relation.higherSize > 0,
+  };
+};
 
 const getChessStyle = (chess: IChess): string => {
   const styl: Record<string, string | number> = {
     "z-index": 100 + chess.layer,
-    "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-    "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-    "left": `${chess.x * GameConfig.columnWidth}px`,
-    "top": `${chess.y * GameConfig.rowWidth}px`,
-    "--opacity": `${chess.layer > (GameConfig.layers / 2) ? 50 : 70}%`,
-    "display": `${(chess.status !== CHESS_STATUS.DEAD) ? 'block' : 'none'}`
+    width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+    height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+    left: `${chess.x * GameConfig.columnWidth}px`,
+    top: `${chess.y * GameConfig.rowWidth}px`,
+    "--opacity": `${chess.layer > GameConfig.layers / 2 ? 50 : 70}%`,
+    display: `${chess.status !== CHESS_STATUS.DEAD ? "block" : "none"}`,
   };
   return Object.keys(styl).reduce<string>(
     (p, k) => (p += `${k}:${styl[k]};`),
@@ -71,34 +83,38 @@ const getChessStyle = (chess: IChess): string => {
 
 const getSlotStyle = () => {
   const styl: Record<string, any> = {
-    "width": `${GameConfig.fillSize * GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-    "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-  }
+    width: `${
+      GameConfig.fillSize * GameConfig.columnWidth * GameConfig.perChessColumn
+    }px`,
+    height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+  };
   return Object.keys(styl).reduce<string>(
     (p, k) => (p += `${k}:${styl[k]};`),
     ""
-  )
-}
+  );
+};
 
 const getSlotItemStyle = (offset: number) => {
   const styl: Record<string, any> = {
-    "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-    "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+    width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+    height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
     "will-change": "auto",
-    "transform": `translateX(${GameConfig.columnWidth * GameConfig.perChessColumn * offset}px)`
-  }
+    transform: `translateX(${
+      GameConfig.columnWidth * GameConfig.perChessColumn * offset
+    }px)`,
+  };
   return Object.keys(styl).reduce<string>(
     (p, k) => (p += `${k}:${styl[k]};`),
     ""
-  )
-}
+  );
+};
 
 const getGrassPos = (i: number) => {
   return {
     left: Math.floor(Math.random() * (i + 2) * 100 + i * 10) + "px",
     top: Math.floor(Math.random() * (i + 2) * 200 + i * 10) + "px",
-  }
-}
+  };
+};
 
 onMounted(launch);
 </script>
@@ -115,7 +131,7 @@ onMounted(launch);
   background: salmon;
   position: relative;
   user-select: none;
-  z-index: 10;
+  z-index: 11;
 }
 
 // 每个棋子
@@ -195,23 +211,24 @@ onMounted(launch);
 
   .grass {
     position: absolute;
-    animation: swing-in-bottom-fwd 1.2s cubic-bezier(0.175, 0.885, 0.320, 1.275) infinite;
+    animation: swing-in-bottom-fwd 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+      infinite;
     animation-delay: 0.3s;
   }
 }
 @keyframes swing-in-bottom-fwd {
   0% {
     -webkit-transform: rotateX(100deg);
-            transform: rotateX(100deg);
+    transform: rotateX(100deg);
     -webkit-transform-origin: bottom;
-            transform-origin: bottom;
+    transform-origin: bottom;
     opacity: 0;
   }
   100% {
     -webkit-transform: rotateX(0);
-            transform: rotateX(0);
+    transform: rotateX(0);
     -webkit-transform-origin: bottom;
-            transform-origin: bottom;
+    transform-origin: bottom;
     opacity: 1;
   }
 }
@@ -256,5 +273,80 @@ onMounted(launch);
   }
 }
 
-@-webkit-keyframes bounceIn{0%,20%,40%,60%,80%,to{-webkit-animation-timing-function:cubic-bezier(.215,.61,.355,1);animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;-webkit-transform:scale3d(.3,.3,.3);transform:scale3d(.3,.3,.3)}20%{-webkit-transform:scale3d(1.1,1.1,1.1);transform:scale3d(1.1,1.1,1.1)}40%{-webkit-transform:scale3d(.9,.9,.9);transform:scale3d(.9,.9,.9)}60%{opacity:1;-webkit-transform:scale3d(1.03,1.03,1.03);transform:scale3d(1.03,1.03,1.03)}80%{-webkit-transform:scale3d(.97,.97,.97);transform:scale3d(.97,.97,.97)}to{opacity:1;-webkit-transform:scaleX(1);transform:scaleX(1)}}@keyframes bounceIn{0%,20%,40%,60%,80%,to{-webkit-animation-timing-function:cubic-bezier(.215,.61,.355,1);animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;-webkit-transform:scale3d(.3,.3,.3);transform:scale3d(.3,.3,.3)}20%{-webkit-transform:scale3d(1.1,1.1,1.1);transform:scale3d(1.1,1.1,1.1)}40%{-webkit-transform:scale3d(.9,.9,.9);transform:scale3d(.9,.9,.9)}60%{opacity:1;-webkit-transform:scale3d(1.03,1.03,1.03);transform:scale3d(1.03,1.03,1.03)}80%{-webkit-transform:scale3d(.97,.97,.97);transform:scale3d(.97,.97,.97)}to{opacity:1;-webkit-transform:scaleX(1);transform:scaleX(1)}}
+@-webkit-keyframes bounceIn {
+  0%,
+  20%,
+  40%,
+  60%,
+  80%,
+  to {
+    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  0% {
+    opacity: 0;
+    -webkit-transform: scale3d(0.3, 0.3, 0.3);
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  20% {
+    -webkit-transform: scale3d(1.1, 1.1, 1.1);
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  40% {
+    -webkit-transform: scale3d(0.9, 0.9, 0.9);
+    transform: scale3d(0.9, 0.9, 0.9);
+  }
+  60% {
+    opacity: 1;
+    -webkit-transform: scale3d(1.03, 1.03, 1.03);
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    -webkit-transform: scale3d(0.97, 0.97, 0.97);
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: scaleX(1);
+    transform: scaleX(1);
+  }
+}
+@keyframes bounceIn {
+  0%,
+  20%,
+  40%,
+  60%,
+  80%,
+  to {
+    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  0% {
+    opacity: 0;
+    -webkit-transform: scale3d(0.3, 0.3, 0.3);
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  20% {
+    -webkit-transform: scale3d(1.1, 1.1, 1.1);
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  40% {
+    -webkit-transform: scale3d(0.9, 0.9, 0.9);
+    transform: scale3d(0.9, 0.9, 0.9);
+  }
+  60% {
+    opacity: 1;
+    -webkit-transform: scale3d(1.03, 1.03, 1.03);
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    -webkit-transform: scale3d(0.97, 0.97, 0.97);
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: scaleX(1);
+    transform: scaleX(1);
+  }
+}
 </style>

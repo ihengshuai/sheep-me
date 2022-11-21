@@ -4,7 +4,9 @@
  * @returns 打乱后的数组
  */
 export function shuffle(arr: any[]) {
-  let m = arr.length, t, i;
+  let m = arr.length,
+    t,
+    i;
   while (m) {
     i = Math.floor(Math.random() * m--);
     t = arr[m];
@@ -14,14 +16,13 @@ export function shuffle(arr: any[]) {
   return arr;
 }
 
-
 /**
  * log日志
  * @param msg 内容
  */
 export function debug(...msg: any[]) {
-  if(import.meta.env.DEV) {
-    console.log(...msg)
+  if (import.meta.env.DEV) {
+    console.log(...msg);
   }
 }
 
@@ -31,5 +32,5 @@ export function debug(...msg: any[]) {
  * @returns promise
  */
 export function sleep(time: number = 18) {
-  return new Promise(resolve => setTimeout(resolve, time));
+  return new Promise((resolve) => setTimeout(resolve, time));
 }

@@ -1,4 +1,4 @@
-import { IChess, IChessRelation } from "../types"
+import { IChess, IChessRelation } from "../types";
 
 /**
  * 棋子关系
@@ -38,7 +38,7 @@ export class ChessRelation implements IChessRelation {
   }
 
   removeRelation() {
-    this._lowers?.forEach(lower => {
+    this._lowers?.forEach((lower) => {
       lower.relation.removeHigher(this._idx);
       this.removeLower(lower.idx);
     });
