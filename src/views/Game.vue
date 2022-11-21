@@ -18,26 +18,26 @@
     <!-- 槽位 -->
     <div class="chess-slot" :style="getSlotStyle()">
       <div
-        v-for="(chess, i) in gameState.activeChesses"
+        v-for="(chess, i) in gameState.chessSlot.list"
         :key="chess?.idx"
         :style="getSlotItemStyle(i)"
-        :class="`slot-item ${chess ? '' : 'emtry'}`"
+        :class="`slot-item ${chess?.hasVal ? '' : 'emtry'}`"
         data-is="slot-item"
       >
-        <img v-if="chess" :src="chess?.value" />
+        <img :src="chess?.value" />
       </div>
       <Transition name="bounce">
         <div
-          v-if="gameState.removeIdx > -1"
+          v-if="gameState.chessSlot.removeIdx > -1"
           :style="`--offset:${
-            gameState.removeIdx *
+            gameState.chessSlot.removeIdx *
             GameConfig.columnWidth *
             GameConfig.perChessColumn
           }px;transform: translate(${
-            gameState.removeIdx *
+            gameState.chessSlot.removeIdx *
             GameConfig.columnWidth *
             GameConfig.perChessColumn
-          }px) scale(1.2);`"
+          }px;`"
           class="star"
         />
       </Transition>
@@ -124,7 +124,7 @@ onMounted(launch);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: url(/imgs/bg.png) repeat;
+  // background: url(/imgs/bg.png) repeat;
 }
 .chess-board {
   margin: 100px auto;
@@ -192,10 +192,15 @@ onMounted(launch);
     box-sizing: border-box;
     &.emtry {
       border: none;
+      img {
+        opacity: 0;
+      }
     }
     img {
       width: 100%;
       height: 100%;
+      opacity: 1;
+      transition: all 200ms;
     }
   }
 }
@@ -270,83 +275,6 @@ onMounted(launch);
   }
   80% {
     transform: scale(1);
-  }
-}
-
-@-webkit-keyframes bounceIn {
-  0%,
-  20%,
-  40%,
-  60%,
-  80%,
-  to {
-    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-  }
-  0% {
-    opacity: 0;
-    -webkit-transform: scale3d(0.3, 0.3, 0.3);
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-  20% {
-    -webkit-transform: scale3d(1.1, 1.1, 1.1);
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-  40% {
-    -webkit-transform: scale3d(0.9, 0.9, 0.9);
-    transform: scale3d(0.9, 0.9, 0.9);
-  }
-  60% {
-    opacity: 1;
-    -webkit-transform: scale3d(1.03, 1.03, 1.03);
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-  80% {
-    -webkit-transform: scale3d(0.97, 0.97, 0.97);
-    transform: scale3d(0.97, 0.97, 0.97);
-  }
-  to {
-    opacity: 1;
-    -webkit-transform: scaleX(1);
-    transform: scaleX(1);
-  }
-}
-@keyframes bounceIn {
-  0%,
-  20%,
-  40%,
-  60%,
-  80%,
-  to {
-    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-  }
-  0% {
-    opacity: 0;
-    -webkit-transform: scale3d(0.3, 0.3, 0.3);
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-  20% {
-    -webkit-transform: scale3d(1.1, 1.1, 1.1);
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-  40% {
-    -webkit-transform: scale3d(0.9, 0.9, 0.9);
-    transform: scale3d(0.9, 0.9, 0.9);
-  }
-  60% {
-    opacity: 1;
-    -webkit-transform: scale3d(1.03, 1.03, 1.03);
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-  80% {
-    -webkit-transform: scale3d(0.97, 0.97, 0.97);
-    transform: scale3d(0.97, 0.97, 0.97);
-  }
-  to {
-    opacity: 1;
-    -webkit-transform: scaleX(1);
-    transform: scaleX(1);
   }
 }
 </style>

@@ -19,6 +19,7 @@ export class Chess implements IChess {
   type;
   value;
   status;
+  board = false;
   relation: IChessRelation;
   constructor(opts: IChessCtor) {
     this.idx = opts.idx;
@@ -32,7 +33,7 @@ export class Chess implements IChess {
 /**
  * 棋盘
  */
-export class ChessBoard<T = Chess> implements IChessBoard<T> {
+export class ChessBoard<T = IChess> implements IChessBoard<T> {
   row: number;
   column: number;
   unitQuantity: number = 0;

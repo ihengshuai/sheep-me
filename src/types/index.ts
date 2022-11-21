@@ -66,6 +66,11 @@ export interface IChess {
    * 棋子之间关系记录
    */
   relation: IChessRelation;
+
+  /**
+   * 是否在棋盘中
+   */
+  inBoard?: boolean;
 }
 
 /**
@@ -165,6 +170,32 @@ export interface IChessRelation {
    * @param chess 棋子
    */
   removeLower: (idx: number) => void;
+}
+
+/**
+ * 槽配置
+ */
+export interface ISlot {
+  /**
+   * 槽大小
+   */
+  readonly size: number;
+  /**
+   * 消掉的数量
+   */
+  readonly deadChessTotal: number;
+  /**
+   * 移除的索引
+   */
+  readonly removeIdx: number;
+  /**
+   * 槽中存在的数量
+   */
+  readonly activeSize: number;
+  /**
+   * 槽数组
+   */
+  readonly list: Array<({key: number;hasVal: boolean;} & Partial<IChess>) | null>;
 }
 
 /**
