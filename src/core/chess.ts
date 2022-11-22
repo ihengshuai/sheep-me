@@ -36,17 +36,27 @@ export class Chess implements IChess {
 export class ChessBoard<T = IChess> implements IChessBoard<T> {
   row: number;
   column: number;
-  unitQuantity: number = 0;
-  chessQuantity: number = 0;
+  unitTotal: number = 0;
+  boardChessTotal: number = 0;
+  private _randomChessTotal: number = 0;
   leftList: T[] | null = null;
   rightList: T[] | null = null;
-  list: { chesses: T[] }[][] | null = null;
+  boardList: T[] | null = null;
+  position: { chesses: T[] }[][] | null = null;
 
   constructor(opts: IChessBoardCtor<T>) {
     this.row = opts.row;
     this.column = opts.column;
-    this.unitQuantity = this.row * this.column;
+    this.unitTotal = this.row * this.column;
     this._init();
+  }
+
+  get allChessTotal() {
+    return this.randomChessTotal + this.boardChessTotal;
+  }
+
+  get randomChessTotal() {
+    return this._randomChessTotal;
   }
 
   /**
@@ -54,11 +64,11 @@ export class ChessBoard<T = IChess> implements IChessBoard<T> {
    * @returns ChessBoard
    */
   private _init() {
-    this.list = new Array(this.row);
+    this.position = new Array(this.row);
     for (let i = 0; i < this.row; i++) {
-      this.list[i] = new Array(this.column);
+      this.position[i] = new Array(this.column);
       for (let j = 0; j < this.column; j++) {
-        this.list[i][j] = { chesses: [] };
+        this.position[i][j] = { chesses: [] };
       }
     }
     return this;
@@ -69,7 +79,7 @@ export class ChessBoard<T = IChess> implements IChessBoard<T> {
    * @param opts 可选的row、column
    */
   reset(opts: Partial<Pick<IChessBoard<T>, "row" | "column">> = {}) {
-    this.list = null;
+    this.position = null;
     this.row = opts.row || this.row;
     this.column = opts.column || this.column;
     this._init();
@@ -82,9 +92,9 @@ export class ChessBoard<T = IChess> implements IChessBoard<T> {
    * @param value 棋子
    */
   fill(row: number, column: number, value: T) {
-    if (this.list) {
-      this.list[row][column].chesses.push(value);
-      this.chessQuantity++;
+    if (this.position) {
+      this.position[row][column].chesses.push(value);
+      this.boardChessTotal++;
     }
   }
 
@@ -94,7 +104,7 @@ export class ChessBoard<T = IChess> implements IChessBoard<T> {
    */
   fillLeft(value: T) {
     (this.leftList || (this.leftList = [])).push(value);
-    this.chessQuantity++;
+    this._randomChessTotal++;
   }
 
   /**
@@ -103,6 +113,6 @@ export class ChessBoard<T = IChess> implements IChessBoard<T> {
    */
   fillRight(value: T) {
     (this.rightList || (this.rightList = [])).push(value);
-    this.chessQuantity++;
+    this._randomChessTotal++;
   }
 }

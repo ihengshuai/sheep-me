@@ -6,7 +6,7 @@
       }`"
     >
       <div ref="chessBoardRef" class="chess-board">
-        <div v-for="chess in gameState.boardChesses" :key="chess.idx">
+        <div v-for="chess in gameState.chessborad?.boardList" :key="chess.idx">
           <div
             :class="getBoardChessClass(chess)"
             :style="getChessStyle(chess)"
@@ -21,46 +21,7 @@
       </div>
 
       <div class="random-chess">
-        <div
-          v-for="(chesses, i) in gameState.randomAreaChesses"
-          :key="i"
-          :class="`random-area ${i % 2 ? 'left' : 'right'}`"
-        >
-          <div
-            v-if="chesses.length"
-            :data-id="chesses[0]?.idx"
-            :style="{
-              background: `url(${chesses[0]?.value}) 42px 42px`,
-              position: 'absolute',
-              width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-              height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-              left: `${i ? 'inherit' : `${(chesses.length - 1) * 10 + 20}px`}`,
-              right: `${i ? `${(chesses.length - 1) * 10 + 20}px` : 'inherit'}`,
-              zIndex: 100,
-            }"
-            :class="`chess-item`"
-            data-is="chess"
-            @click="(e: Event) => clickChess(chesses[0], e, i % 2 ? 'RIGHT' : 'LEFT')"
-          />
-          <div
-            v-for="num in Math.max(chesses.length - 1, 0)"
-            :key="num"
-            :style="{
-              zIndex: 100 - num,
-              position: 'absolute',
-              width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-              height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-              left: `${
-                i ? 'inherit' : `${(chesses.length - 1 - num) * 10 + 20}px`
-              }`,
-              right: `${
-                i ? `${(chesses.length - 1 - num) * 10 + 20}px` : 'inherit'
-              }`,
-            }"
-            data-is="chess"
-            class="chess-item disabled"
-          />
-        </div>
+        
       </div>
 
       <!-- 槽位 -->
@@ -97,7 +58,7 @@
     </div>
 
     <div v-if="gameState.status === GAME_STATUS.BEGIN" class="blank_area">
-      <h1 class="title">羊了羊</h1>
+      <h1 class="title"></h1>
       <button class="begin_btn" @click="start" />
     </div>
   </div>

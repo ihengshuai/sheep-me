@@ -21,8 +21,8 @@ export const CHESS_TYPES: Array<ICHESS_ENUM> = [
 export const GameConfig: IGameConfig = {
   type: 2,
   layers: 2,
-  quantityPerLayer: 3,
-  quantityRandom: 3,
+  totalPerLayer: 3,
+  randomTotal: 0,
   removeSize: 3,
   fillSize: 7,
   row: 24,

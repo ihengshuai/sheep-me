@@ -86,9 +86,14 @@ export type IChessCtor = Omit<
  */
 export interface IChessBoard<T> {
   /**
+   * 棋盘二维坐标系
+   */
+  position: Array<Array<{ chesses: T[] }>> | null;
+
+  /**
    * 棋盘列表
    */
-  list: Array<Array<{ chesses: T[] }>> | null;
+  boardList: Array<T> | null;
 
   /**
    * 左边列表(棋盘下面两个随机区)
@@ -111,22 +116,27 @@ export interface IChessBoard<T> {
   column: number;
 
   /**
-   * 棋子数量
+   * 棋盘中棋子数量
    */
-  chessQuantity: number;
+  boardChessTotal: number;
 
   /**
    * 格子数量
    */
-  unitQuantity: number;
+  unitTotal: number;
+
+  /**
+   * 所有棋子数量
+   */
+  readonly allChessTotal: number;
 }
 
 /**
  * 棋盘构造器
  */
-export type IChessBoardCtor<T> = Omit<
+export type IChessBoardCtor<T> = Pick<
   IChessBoard<T>,
-  "list" | "chessQuantity" | "unitQuantity" | "leftList" | "rightList"
+  "row" | "column"
 >;
 
 /**
@@ -198,6 +208,10 @@ export interface ISlot {
   readonly list: Array<
     ({ key: number; hasVal: boolean } & Partial<IChess>) | null
   >;
+  /**
+   * 插入chess
+   */
+  insert: (chess: IChess, e: Event, cb?: Function) => void
 }
 
 /**
@@ -227,12 +241,12 @@ export interface IGameConfig {
   /**
    * 每层数量
    */
-  quantityPerLayer: number;
+  totalPerLayer: number;
 
   /**
    * 两个随机区域棋子数量
    */
-  quantityRandom: number;
+  randomTotal: number;
 
   /**
    * 棋盘行数

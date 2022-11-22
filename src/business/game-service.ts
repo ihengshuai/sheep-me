@@ -1,15 +1,13 @@
 import { reactive, Ref } from "vue";
 import Confirm from "../components/confirm";
 import { Chess, ChessBoard, CHESS_TYPES, GameConfig, Slot } from "../core";
-import { ICHESS_ENUM, GAME_STATUS, IChess } from "../types";
+import { ICHESS_ENUM, GAME_STATUS, IChess, ISlot } from "../types";
 import { shuffle, debug } from "../utils";
 
 /**
  * 实现游戏过程
  */
 export function gameService(dom: Ref<HTMLElement>) {
-  // 棋盘
-  let chessborad: ChessBoard;
   // 游戏相关数据
   const gameState = reactive({
     /**
@@ -17,17 +15,13 @@ export function gameService(dom: Ref<HTMLElement>) {
      */
     status: GAME_STATUS.BEGIN,
     /**
-     * 棋盘中的棋子
+     * 棋盘
      */
-    boardChesses: [] as Chess[],
-    /**
-     * 随机区棋子
-     */
-    randomAreaChesses: [] as Chess[][],
+    chessborad: null as ChessBoard | null,
     /**
      * 槽
      */
-    chessSlot: new Slot(".chess-slot", GameConfig.fillSize),
+    chessSlot: {} as ISlot,
   });
 
   let moving = false;
@@ -51,12 +45,12 @@ export function gameService(dom: Ref<HTMLElement>) {
       return;
     moving = true;
     gameState.chessSlot.insert(chess, e, () => {
-      if (!chess.inBoard) {
-        const randomIdx = dir === "LEFT" ? 0 : 1;
-        gameState.randomAreaChesses[randomIdx] = [
-          ...gameState.randomAreaChesses[randomIdx].slice(1),
-        ];
-      }
+      // if (!chess.inBoard) {
+      //   const randomIdx = dir === "LEFT" ? 0 : 1;
+      //   gameState.randomAreaChesses[randomIdx] = [
+      //     ...gameState.randomAreaChesses[randomIdx].slice(1),
+      //   ];
+      // }
       moving = false;
       if (gameState.chessSlot.activeSize === GameConfig.fillSize) {
         gameState.status = GAME_STATUS.FAILURE;
@@ -75,7 +69,7 @@ export function gameService(dom: Ref<HTMLElement>) {
           },
         });
       } else if (
-        gameState.chessSlot.deadChessTotal === chessborad.chessQuantity
+        gameState.chessSlot.deadChessTotal === gameState.chessborad?.allChessTotal
       ) {
         gameState.status = GAME_STATUS.SUCCESS;
         Confirm.$dialog({
@@ -102,9 +96,9 @@ export function gameService(dom: Ref<HTMLElement>) {
   const initChessBoard = () => {
     if (!dom?.value)
       throw Error("need a root dom ref at function gameService.");
-    chessborad = new ChessBoard({
+    gameState.chessborad = new ChessBoard({
       row: GameConfig.row,
-      column: GameConfig.column,
+      column: GameConfig.column
     });
     const rootElemStyle: Record<string, string> = {
       width: `${GameConfig.column * GameConfig.columnWidth}px`,
@@ -126,15 +120,15 @@ export function gameService(dom: Ref<HTMLElement>) {
     return new Promise((resolve) => {
       const perRemoveTotal = GameConfig.type * GameConfig.removeSize;
       const defineTotal =
-        GameConfig.layers * GameConfig.quantityPerLayer +
-        GameConfig.quantityRandom;
+        GameConfig.layers * GameConfig.totalPerLayer +
+        GameConfig.randomTotal;
       // 棋子应该是类型的整数倍，才能消除完
       const shouldTotal =
         defineTotal + perRemoveTotal - (defineTotal % perRemoveTotal);
       debug("真正需要的棋子数：", shouldTotal);
-      const chessboardTotal = shouldTotal - GameConfig.quantityRandom;
+      const chessboardTotal = shouldTotal - GameConfig.randomTotal;
       debug("棋盘中的棋子数：", chessboardTotal);
-      debug("随机区域的棋子数：", GameConfig.quantityRandom);
+      debug("随机区域的棋子数：", GameConfig.randomTotal);
 
       // 渲染棋盘棋子
       const renderChessType = CHESS_TYPES.slice(0, GameConfig.type);
@@ -155,14 +149,17 @@ export function gameService(dom: Ref<HTMLElement>) {
         );
       }
 
-      let boardChessesIdx = GameConfig.quantityRandom;
+      let boardChessesIdx = GameConfig.randomTotal;
       const randomList = allChess.slice(0, boardChessesIdx);
-      gameState.randomAreaChesses = [[], []];
-      for (let i = 0; i < GameConfig.quantityRandom; i++) {
-        gameState.randomAreaChesses[i % 2].push(randomList[i]);
+      for (let i = 0; i < GameConfig.randomTotal; i++) {
+        if (i % 2) {
+          gameState.chessborad?.fillLeft(randomList[i]);
+        } else {
+          gameState.chessborad?.fillRight(randomList[i]);
+        }
       }
       let leftNoPosChesss = fillChessTypeList.slice(boardChessesIdx).length;
-      gameState.boardChesses = allChess.slice(boardChessesIdx);
+      gameState.chessborad!.boardList = allChess.slice(boardChessesIdx);
       const pos = {
         minX: 0,
         maxX: GameConfig.column - GameConfig.perChessColumn,
@@ -173,7 +170,7 @@ export function gameService(dom: Ref<HTMLElement>) {
         let currentChesss =
           i === GameConfig.layers - 1
             ? leftNoPosChesss
-            : Math.min(leftNoPosChesss, GameConfig.quantityPerLayer);
+            : Math.min(leftNoPosChesss, GameConfig.totalPerLayer);
         leftNoPosChesss -= currentChesss;
         // 四个方向加减缩进
         const dir = i % 8;
@@ -205,6 +202,13 @@ export function gameService(dom: Ref<HTMLElement>) {
       resolve(true);
     });
   };
+
+  /**
+   * 初始化槽
+   */
+  const initSlot = () => {
+    gameState.chessSlot = new Slot(".chess-slot", GameConfig.fillSize);
+  }
 
   /**
    * 为棋子生成坐标
@@ -247,7 +251,7 @@ export function gameService(dom: Ref<HTMLElement>) {
           break;
         }
       }
-      chessborad.fill(x, y, chess);
+      gameState.chessborad?.fill(x, y, chess);
       chess.x = x;
       chess.y = y;
       chess.inBoard = true;
@@ -276,7 +280,7 @@ export function gameService(dom: Ref<HTMLElement>) {
     let maxLevel = 0;
     for (let i = minX; i < maxX; i++) {
       for (let j = minY; j < maxY; j++) {
-        const relationBlocks = chessborad.list?.[i][j]?.chesses;
+        const relationBlocks = gameState.chessborad?.position?.[i][j]?.chesses;
         if (relationBlocks!?.length > 0) {
           const maxLevelRelationBlock =
             relationBlocks![relationBlocks!.length - 1];
@@ -298,10 +302,12 @@ export function gameService(dom: Ref<HTMLElement>) {
     gameState.status = GAME_STATUS.ONGOING;
     initChessBoard();
     initChess();
+    initSlot();
   };
 
   const reLaunch = async () => {
     await initChess();
+    await initSlot();
     gameState.status = GAME_STATUS.ONGOING;
   };
 

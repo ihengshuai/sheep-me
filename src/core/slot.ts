@@ -80,11 +80,11 @@ export class Slot implements ISlot {
     };
     this._activeSize++;
     chess.status = CHESS_STATUS.ACTIVE;
-    await this.doRemove();
+    await this._doRemove();
     cb?.();
   }
 
-  async doRemove() {
+  private async _doRemove() {
     const record: Record<string | number, { total: number; idx: number[] }> =
       {};
     let list = this.list;
@@ -147,11 +147,22 @@ export class Slot implements ISlot {
         y = this._slotAllPos[this._insertIdx].y = top;
       }
       const { left: chessX, top: chessY } = chessElem.getBoundingClientRect();
+      const oldStyl = chessElem.getAttribute("style");
+      const originStyl: Record<string, any> = {
+        "left": `${chessX}px`,
+        "top": `${chessY}px`,
+        "position": "fixed",
+        "z-index": 1000,
+        "margin-left": 0,
+        "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+        "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`
+      }
       chessElem?.setAttribute(
         "style",
-        `left:${chessX}px;top:${chessY}px;position:fixed;width:${
-          GameConfig.columnWidth * GameConfig.perChessColumn
-        }px;height:${GameConfig.rowWidth * GameConfig.perChessRow}px`
+        Object.keys(originStyl).reduce<string>(
+          (p, k) => (p += `${k}:${originStyl[k]};`),
+          ""
+        )
       );
       requestAnimationFrame(() => {
         const styl: Record<string, string | number> = {
@@ -174,7 +185,7 @@ export class Slot implements ISlot {
           )
         );
         setTimeout(() => {
-          // chessElem?.setAttribute("style", `display:none`);
+          chessElem?.setAttribute("style", oldStyl!);
           resolve();
         }, 200);
       });
