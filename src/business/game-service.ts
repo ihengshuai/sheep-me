@@ -40,7 +40,7 @@ export function gameService(dom: Ref<HTMLElement>) {
   const clickChess = async (
     chess: IChess,
     e: Event,
-    dir?: 'RIGHT' | 'LEFT'
+    dir?: "RIGHT" | "LEFT"
   ) => {
     if (
       gameState.status === GAME_STATUS.FAILURE ||
@@ -50,17 +50,13 @@ export function gameService(dom: Ref<HTMLElement>) {
     )
       return;
     moving = true;
-    if (!chess.inBoard) {
-      const randomIdx = dir === "LEFT" ? 0 : 1;
-      let idx = -1;
-      gameState.randomAreaChesses[randomIdx].forEach((l, i) => {
-        if (l.idx === chess.idx) {
-          idx = i;
-        }
-      });
-      gameState.randomAreaChesses[randomIdx] = [...gameState.randomAreaChesses[randomIdx].slice(1)];
-    }
     gameState.chessSlot.insert(chess, e, () => {
+      if (!chess.inBoard) {
+        const randomIdx = dir === "LEFT" ? 0 : 1;
+        gameState.randomAreaChesses[randomIdx] = [
+          ...gameState.randomAreaChesses[randomIdx].slice(1),
+        ];
+      }
       moving = false;
       if (gameState.chessSlot.activeSize === GameConfig.fillSize) {
         gameState.status = GAME_STATUS.FAILURE;
@@ -69,23 +65,31 @@ export function gameService(dom: Ref<HTMLElement>) {
           content: "失败了",
           showMask: true,
           maskClose: false,
-          cancleText: "关闭",
+          cancleText: "返回",
           okText: "再来一局",
           onOk: async () => {
             await reLaunch();
           },
+          onCancle() {
+            gameState.status = GAME_STATUS.BEGIN;
+          },
         });
-      } else if (gameState.chessSlot.deadChessTotal === chessborad.chessQuantity) {
+      } else if (
+        gameState.chessSlot.deadChessTotal === chessborad.chessQuantity
+      ) {
         gameState.status = GAME_STATUS.SUCCESS;
         Confirm.$dialog({
           title: "提示",
           content: "成功了",
           showMask: true,
           maskClose: false,
-          cancleText: "关闭",
+          cancleText: "返回",
           okText: "再来一局",
           onOk: () => {
             reLaunch();
+          },
+          onCancle() {
+            gameState.status = GAME_STATUS.BEGIN;
           },
         });
       }
@@ -154,11 +158,11 @@ export function gameService(dom: Ref<HTMLElement>) {
       let boardChessesIdx = GameConfig.quantityRandom;
       const randomList = allChess.slice(0, boardChessesIdx);
       gameState.randomAreaChesses = [[], []];
-      for (let i = 0; i < GameConfig.quantityRandom; i ++) {
+      for (let i = 0; i < GameConfig.quantityRandom; i++) {
         gameState.randomAreaChesses[i % 2].push(randomList[i]);
       }
-      let leftNoPosChesss = fillChessTypeList.slice(boardChessesIdx, chessboardTotal).length;
-      gameState.boardChesses = allChess.slice(boardChessesIdx, chessboardTotal);
+      let leftNoPosChesss = fillChessTypeList.slice(boardChessesIdx).length;
+      gameState.boardChesses = allChess.slice(boardChessesIdx);
       const pos = {
         minX: 0,
         maxX: GameConfig.column - GameConfig.perChessColumn,

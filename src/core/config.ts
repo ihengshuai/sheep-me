@@ -19,10 +19,10 @@ export const CHESS_TYPES: Array<ICHESS_ENUM> = [
  * 游戏配置
  */
 export const GameConfig: IGameConfig = {
-  type: 9,
-  layers: 8,
-  quantityPerLayer: 31,
-  quantityRandom: 0,
+  type: 2,
+  layers: 2,
+  quantityPerLayer: 3,
+  quantityRandom: 3,
   removeSize: 3,
   fillSize: 7,
   row: 24,

@@ -195,7 +195,9 @@ export interface ISlot {
   /**
    * 槽数组
    */
-  readonly list: Array<({key: number;hasVal: boolean;} & Partial<IChess>) | null>;
+  readonly list: Array<
+    ({ key: number; hasVal: boolean } & Partial<IChess>) | null
+  >;
 }
 
 /**

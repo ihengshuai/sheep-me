@@ -6,7 +6,7 @@ import { nextTick } from "vue";
 import { CHESS_STATUS, IChess, ISlot } from "../types";
 import { GameConfig } from "./config";
 
-export class Slot implements ISlot{
+export class Slot implements ISlot {
   private _selector: string;
   private _container: HTMLElement | null = null;
   private _size = 0;
@@ -15,7 +15,9 @@ export class Slot implements ISlot{
   private _activeSize = 0;
   private _insertIdx = 0;
   private _slotAllPos: Record<number, { x?: number; y?: number }> = {};
-  private _slotList: Array<({key: number;hasVal: boolean;} & Partial<IChess>) | null> = [];
+  private _slotList: Array<
+    ({ key: number; hasVal: boolean } & Partial<IChess>) | null
+  > = [];
 
   constructor(selector: string, size: number) {
     this._selector = selector;
@@ -40,8 +42,8 @@ export class Slot implements ISlot{
     for (let i = 0; i < this.size; i++) {
       this._slotList.push({
         key: i,
-        hasVal: false
-      })
+        hasVal: false,
+      });
     }
   }
 
@@ -54,7 +56,9 @@ export class Slot implements ISlot{
   }
 
   private _setInsertIdx(chess: IChess) {
-    let sameTypeIdx = this._slotList.map((c) => c?.type).lastIndexOf(chess.type);
+    let sameTypeIdx = this._slotList
+      .map((c) => c?.type)
+      .lastIndexOf(chess.type);
     const insertIdx = sameTypeIdx === -1 ? this._activeSize : sameTypeIdx + 1;
     this._insertIdx = insertIdx;
   }
@@ -65,42 +69,43 @@ export class Slot implements ISlot{
     this._slotList = [
       ...this._slotList.slice(0, this._insertIdx),
       { key: this._slotList[this.size - 1]!.key, hasVal: false },
-      ...this._slotList.slice(this._insertIdx)
+      ...this._slotList.slice(this._insertIdx),
     ].slice(0, this.size);
     chess?.relation.removeRelation();
     await this.runInsertAnimation(e);
     this._slotList[this._insertIdx] = {
       ...this._slotList[this._insertIdx]!,
       hasVal: true,
-      ...chess
+      ...chess,
     };
-    this._activeSize ++;
+    this._activeSize++;
     chess.status = CHESS_STATUS.ACTIVE;
     await this.doRemove();
     cb?.();
   }
 
   async doRemove() {
-    const record: Record<string | number, {total: number;idx: number[];}> = {};
+    const record: Record<string | number, { total: number; idx: number[] }> =
+      {};
     let list = this.list;
-    for (let i = 0; i < this.activeSize; i ++) {
+    for (let i = 0; i < this.activeSize; i++) {
       const current = list[i]!;
       if (!record[current.type!]) {
         record[current.type!] = {
           total: 1,
-          idx: [i]
-        }
+          idx: [i],
+        };
       } else {
         record[current.type!].total++;
         record[current.type!].idx.push(i);
       }
     }
-    Object.keys(record).forEach(t => {
+    Object.keys(record).forEach((t) => {
       if (record[t].total === GameConfig.removeSize) {
         this._activeSize -= 3;
         this._deadChessTotal += 3;
         this._removeIdx = record[t].idx[0];
-        for (let i = 0; i< record[t].idx.length; i++) {
+        for (let i = 0; i < record[t].idx.length; i++) {
           list.push({
             key: list[record[t].idx[i]]!.key,
             hasVal: false,
@@ -110,7 +115,7 @@ export class Slot implements ISlot{
       }
     });
     await nextTick();
-    this._slotList = list.filter(i => !!i);
+    this._slotList = list.filter((i) => !!i);
     this._removeIdx = -1;
   }
 
@@ -131,10 +136,11 @@ export class Slot implements ISlot{
         y = this._slotAllPos[this._insertIdx].y!;
       } else {
         this._slotAllPos[this._insertIdx] = {};
-        this._container = document.querySelector(this._selector) || document.body;
-        const destSlot = this._container.querySelectorAll("[data-is='slot-item']")?.[
-          this._insertIdx
-        ];
+        this._container =
+          document.querySelector(this._selector) || document.body;
+        const destSlot = this._container.querySelectorAll(
+          "[data-is='slot-item']"
+        )?.[this._insertIdx];
         if (!destSlot) return;
         const { left, top } = destSlot.getBoundingClientRect();
         x = this._slotAllPos[this._insertIdx].x = left;
@@ -143,7 +149,9 @@ export class Slot implements ISlot{
       const { left: chessX, top: chessY } = chessElem.getBoundingClientRect();
       chessElem?.setAttribute(
         "style",
-        `left:${chessX}px;top:${chessY}px;position:fixed;width:${GameConfig.columnWidth * GameConfig.perChessColumn}px;height:${GameConfig.rowWidth * GameConfig.perChessRow}px`
+        `left:${chessX}px;top:${chessY}px;position:fixed;width:${
+          GameConfig.columnWidth * GameConfig.perChessColumn
+        }px;height:${GameConfig.rowWidth * GameConfig.perChessRow}px`
       );
       requestAnimationFrame(() => {
         const styl: Record<string, string | number> = {

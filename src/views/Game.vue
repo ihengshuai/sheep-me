@@ -1,91 +1,105 @@
 <template>
-  <div class="chess-viewer">
-    <div ref="chessBoardRef" class="chess-board">
-      <div v-for="chess in gameState.boardChesses" :key="chess.idx">
-        <div
-          :class="getBoardChessClass(chess)"
-          :style="getChessStyle(chess)"
-          :data-id="chess.idx"
-          :data-layer="chess.layer"
-          data-is="chess"
-          @click="(e: Event) => clickChess(chess, e)"
-        >
-          <img :src="chess.value" alt="" />
+  <div>
+    <div
+      :class="`chess-viewer ${
+        gameState.status === GAME_STATUS.BEGIN ? 'hidden' : ''
+      }`"
+    >
+      <div ref="chessBoardRef" class="chess-board">
+        <div v-for="chess in gameState.boardChesses" :key="chess.idx">
+          <div
+            :class="getBoardChessClass(chess)"
+            :style="getChessStyle(chess)"
+            :data-id="chess.idx"
+            :data-layer="chess.layer"
+            data-is="chess"
+            @click="(e: Event) => clickChess(chess, e)"
+          >
+            <img :src="chess.value" alt="" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="random-chess">
-      <div
-        v-for="(chesses, i) in gameState.randomAreaChesses"
-        :key="i"
-        :class="`random-area ${i % 2 ? 'left' : 'right'}`"
-        :style="{}"
-      >
+      <div class="random-chess">
         <div
-          v-if="chesses.length"
-          :data-id="chesses[0]?.idx"
-          :style="{
-            background: `url(${chesses[0]?.value}) 42px 42px`,
-            position: 'absolute',
-            width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-            height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-            left: `${i ? 'inherit' : `${(chesses.length - 1) * 10 + 20}px`}`,
-            right: `${i ? `${(chesses.length - 1) * 10 + 20}px` : 'inherit'}`,
-            zIndex: 100
-          }"
-          :class="`block`"
-          data-is="chess"
-          @click="(e) => clickChess(chesses[0], e, i % 2 ? 'LEFT' : 'RIGHT')"
-        />
-        <div
-          v-for="num in Math.max(chesses.length - 1, 0)"
-          :key="num"
-          :style="{
-            zIndex: 100 - num,
-            position: 'absolute',
-            width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-            height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
-            left: `${i ? 'inherit' : `${(chesses.length - 1 - num) * 10 + 20}px`}`,
-            right: `${i ? `${(chesses.length - 1 - num) * 10 + 20}px` : 'inherit'}`,
-          }"
-          data-is="chess"
-          class="chess-item disabled"
-        />
+          v-for="(chesses, i) in gameState.randomAreaChesses"
+          :key="i"
+          :class="`random-area ${i % 2 ? 'left' : 'right'}`"
+        >
+          <div
+            v-if="chesses.length"
+            :data-id="chesses[0]?.idx"
+            :style="{
+              background: `url(${chesses[0]?.value}) 42px 42px`,
+              position: 'absolute',
+              width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+              height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+              left: `${i ? 'inherit' : `${(chesses.length - 1) * 10 + 20}px`}`,
+              right: `${i ? `${(chesses.length - 1) * 10 + 20}px` : 'inherit'}`,
+              zIndex: 100,
+            }"
+            :class="`chess-item`"
+            data-is="chess"
+            @click="(e: Event) => clickChess(chesses[0], e, i % 2 ? 'RIGHT' : 'LEFT')"
+          />
+          <div
+            v-for="num in Math.max(chesses.length - 1, 0)"
+            :key="num"
+            :style="{
+              zIndex: 100 - num,
+              position: 'absolute',
+              width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+              height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+              left: `${
+                i ? 'inherit' : `${(chesses.length - 1 - num) * 10 + 20}px`
+              }`,
+              right: `${
+                i ? `${(chesses.length - 1 - num) * 10 + 20}px` : 'inherit'
+              }`,
+            }"
+            data-is="chess"
+            class="chess-item disabled"
+          />
+        </div>
       </div>
-    </div>
 
-    <!-- 槽位 -->
-    <div class="chess-slot" :style="getSlotStyle()">
-      <div
-        v-for="(chess, i) in gameState.chessSlot.list"
-        :key="chess?.idx"
-        :style="getSlotItemStyle(i)"
-        :class="`slot-item ${chess?.hasVal ? '' : 'emtry'}`"
-        data-is="slot-item"
-      >
-        <img :src="chess?.value" />
-      </div>
-      <Transition name="bounce">
+      <!-- 槽位 -->
+      <div class="chess-slot" :style="getSlotStyle()">
         <div
-          v-if="gameState.chessSlot.removeIdx > -1"
-          :style="`--offset:${
-            gameState.chessSlot.removeIdx *
-            GameConfig.columnWidth *
-            GameConfig.perChessColumn
-          }px;transform: translate(${
-            gameState.chessSlot.removeIdx *
-            GameConfig.columnWidth *
-            GameConfig.perChessColumn
-          }px;`"
-          class="star"
-        />
-      </Transition>
-    </div>
+          v-for="(chess, i) in gameState.chessSlot.list"
+          :key="chess?.idx"
+          :style="getSlotItemStyle(i)"
+          :class="`slot-item ${chess?.hasVal ? '' : 'emtry'}`"
+          data-is="slot-item"
+        >
+          <img :src="chess?.value" />
+        </div>
+        <Transition name="bounce">
+          <div
+            v-if="gameState.chessSlot.removeIdx > -1"
+            :style="`--offset:${
+              gameState.chessSlot.removeIdx *
+              GameConfig.columnWidth *
+              GameConfig.perChessColumn
+            }px;transform: translate(${
+              gameState.chessSlot.removeIdx *
+              GameConfig.columnWidth *
+              GameConfig.perChessColumn
+            }px;`"
+            class="star"
+          />
+        </Transition>
+      </div>
 
-    <!-- <div class="grass-wrap">
+      <!-- <div class="grass-wrap">
       <img v-for="i in 30" :key="i" :style="getGrassPos(i)" class="grass animate__bounceIn" src="/imgs/grass.png" alt="">
     </div> -->
+    </div>
+
+    <div v-if="gameState.status === GAME_STATUS.BEGIN" class="blank_area">
+      <h1 class="title">羊了羊</h1>
+      <button class="begin_btn" @click="start" />
+    </div>
   </div>
 </template>
 
@@ -93,7 +107,7 @@
 import { onMounted, ref } from "vue";
 import { gameService } from "../business";
 import { GameConfig } from "../core";
-import { CHESS_STATUS, IChess } from "../types";
+import { CHESS_STATUS, GAME_STATUS, IChess } from "../types";
 
 const chessBoardRef = ref();
 const { gameState, launch, clickChess } = gameService(chessBoardRef);
@@ -156,15 +170,34 @@ const getGrassPos = (i: number) => {
   };
 };
 
-onMounted(launch);
+const start = () => {
+  launch();
+  setBgMusic();
+};
+
+const setBgMusic = () => {
+  const audio = new Audio();
+  audio.src = "/music/game_bg_music.mp3";
+  audio.muted = true;
+  audio.addEventListener("click", () => {
+    audio.play();
+    audio.muted = false;
+  });
+  document.body.appendChild(audio);
+  audio.click();
+};
 </script>
 
 <style lang="scss" scoped>
 .chess-viewer {
-  width: 100vw;
   height: 100vh;
   overflow: hidden;
-  // background: url(/imgs/bg.png) repeat;
+  background: url(/imgs/bg.png) repeat;
+  &.hidden {
+    visibility: hidden;
+    background: transparent;
+    position: absolute;
+  }
 }
 .chess-board {
   margin: 100px auto 0;
@@ -194,6 +227,14 @@ onMounted(launch);
     top: 0;
     left: 0;
     background: transparent;
+  }
+
+  &.disabled {
+    background: rgb(41, 41, 41);
+    border: 1px solid #000;
+    &::after {
+      display: none;
+    }
   }
 
   &.gray {
@@ -263,6 +304,38 @@ onMounted(launch);
       height: 100%;
       opacity: 1;
       transition: all 200ms;
+    }
+  }
+}
+
+.blank_area {
+  height: 100vh;
+  overflow: hidden;
+  background: rgba(0 0 0 / 90%);
+  position: relative;
+  z-index: 1000;
+
+  .title {
+    color: #fff;
+    text-align: center;
+    margin: 100px auto 0;
+    font-size: 6em;
+  }
+
+  .begin_btn {
+    width: 222px;
+    height: 114px;
+    background: url(/imgs/play_btn.png);
+    background-color: transparent;
+    background-position: center center;
+    position: absolute;
+    bottom: 200px;
+    left: 50%;
+    transform: translate(-50%);
+    cursor: pointer;
+    transition: 200ms;
+    &:hover {
+      transform: translate(-50%) scale(1.1);
     }
   }
 }
