@@ -149,14 +149,14 @@ export class Slot implements ISlot {
       const { left: chessX, top: chessY } = chessElem.getBoundingClientRect();
       const oldStyl = chessElem.getAttribute("style");
       const originStyl: Record<string, any> = {
-        "left": `${chessX}px`,
-        "top": `${chessY}px`,
-        "position": "fixed",
+        left: `${chessX}px`,
+        top: `${chessY}px`,
+        position: "fixed",
         "z-index": 1000,
         "margin-left": 0,
-        "width": `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
-        "height": `${GameConfig.rowWidth * GameConfig.perChessRow}px`
-      }
+        width: `${GameConfig.columnWidth * GameConfig.perChessColumn}px`,
+        height: `${GameConfig.rowWidth * GameConfig.perChessRow}px`,
+      };
       chessElem?.setAttribute(
         "style",
         Object.keys(originStyl).reduce<string>(

@@ -69,7 +69,8 @@ export function gameService(dom: Ref<HTMLElement>) {
           },
         });
       } else if (
-        gameState.chessSlot.deadChessTotal === gameState.chessborad?.allChessTotal
+        gameState.chessSlot.deadChessTotal ===
+        gameState.chessborad?.allChessTotal
       ) {
         gameState.status = GAME_STATUS.SUCCESS;
         Confirm.$dialog({
@@ -98,7 +99,7 @@ export function gameService(dom: Ref<HTMLElement>) {
       throw Error("need a root dom ref at function gameService.");
     gameState.chessborad = new ChessBoard({
       row: GameConfig.row,
-      column: GameConfig.column
+      column: GameConfig.column,
     });
     const rootElemStyle: Record<string, string> = {
       width: `${GameConfig.column * GameConfig.columnWidth}px`,
@@ -120,8 +121,7 @@ export function gameService(dom: Ref<HTMLElement>) {
     return new Promise((resolve) => {
       const perRemoveTotal = GameConfig.type * GameConfig.removeSize;
       const defineTotal =
-        GameConfig.layers * GameConfig.totalPerLayer +
-        GameConfig.randomTotal;
+        GameConfig.layers * GameConfig.totalPerLayer + GameConfig.randomTotal;
       // 棋子应该是类型的整数倍，才能消除完
       const shouldTotal =
         defineTotal + perRemoveTotal - (defineTotal % perRemoveTotal);
@@ -208,7 +208,7 @@ export function gameService(dom: Ref<HTMLElement>) {
    */
   const initSlot = () => {
     gameState.chessSlot = new Slot(".chess-slot", GameConfig.fillSize);
-  }
+  };
 
   /**
    * 为棋子生成坐标

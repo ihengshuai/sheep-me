@@ -2,10 +2,10 @@
   <div>
     <div
       :class="`chess-viewer ${
-        gameState.status === GAME_STATUS.BEGIN ? 'hidden' : ''
+        gameState.status === GAME_STATUS.BEGIN ? '' : ''
       }`"
     >
-      <div ref="chessBoardRef" class="chess-board">
+      <div ref="chessBoardRef" :class="`chess-board ${isDev ? 'debug' : ''}`">
         <div v-for="chess in gameState.chessborad?.boardList" :key="chess.idx">
           <div
             :class="getBoardChessClass(chess)"
@@ -20,9 +20,7 @@
         </div>
       </div>
 
-      <div class="random-chess">
-        
-      </div>
+      <div class="random-chess"></div>
 
       <!-- 槽位 -->
       <div class="chess-slot" :style="getSlotStyle()">
@@ -57,7 +55,7 @@
     </div> -->
     </div>
 
-    <div v-if="gameState.status === GAME_STATUS.BEGIN" class="blank_area">
+    <div class="blank_area">
       <h1 class="title"></h1>
       <button class="begin_btn" @click="start" />
     </div>
@@ -72,6 +70,8 @@ import { CHESS_STATUS, GAME_STATUS, IChess } from "../types";
 
 const chessBoardRef = ref();
 const { gameState, launch, clickChess } = gameService(chessBoardRef);
+
+const isDev = import.meta.env.DEV;
 
 const getBoardChessClass = (chess: IChess): Record<string, boolean> => {
   return {
@@ -131,6 +131,8 @@ const getGrassPos = (i: number) => {
   };
 };
 
+onMounted(launch);
+
 const start = () => {
   launch();
   setBgMusic();
@@ -162,10 +164,13 @@ const setBgMusic = () => {
 }
 .chess-board {
   margin: 100px auto 0;
-  background: salmon;
   position: relative;
   user-select: none;
   z-index: 11;
+
+  &.debug {
+    background: salmon;
+  }
 }
 
 // 每个棋子
